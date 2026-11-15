@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { ShieldCheck, Mail, Lock, Sparkles, Loader2, Info } from "lucide-react";
+import { ShieldCheck, Mail, Lock, Loader2, Info } from "lucide-react";
 
 type Props = {
   onSuccess: () => void;
@@ -98,9 +98,11 @@ export function AuthGate({ onSuccess }: Props) {
 
       <div className="w-full max-w-md p-8 rounded-[2.2rem] bg-white/75 border border-white/95 backdrop-blur-2xl shadow-[0_16px_48px_rgba(148,163,184,0.2)] z-10">
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-400 to-violet-400 flex items-center justify-center text-white shadow-md mb-3">
-            <Sparkles className="w-7 h-7" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="Weet ロゴ"
+            className="w-14 h-14 rounded-2xl object-cover shadow-md mb-3"
+          />
           <p className="text-sm font-extrabold tracking-wide text-violet-500 mb-1">
             ようこそ WEET へ
           </p>
