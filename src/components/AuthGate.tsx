@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { ShieldCheck, Mail, Lock, Sparkles, Loader2 } from "lucide-react";
+import { ShieldCheck, Mail, Lock, Sparkles, Loader2, Info } from "lucide-react";
 
 type Props = {
   onSuccess: () => void;
@@ -72,7 +72,7 @@ export function AuthGate({ onSuccess }: Props) {
           onSuccess();
         } else {
           setInfoMsg(
-            "確認メールを送信しました！差出人「Supabase Auth」から届く英語メール内のリンクを押すと登録が完了します（迷惑メールフォルダもご確認ください）。"
+            "確認メールを送信しました！差出人「Supabase Auth」から届く英語メール内のリンク（Confirm email address）を押すと登録が完了します。"
           );
         }
       } else {
@@ -185,8 +185,23 @@ export function AuthGate({ onSuccess }: Props) {
             </div>
           </div>
 
+          {/* 新規登録時のみ表示：Supabase Auth 確認メールの公式案内カード */}
           {isSignUp && (
-            <label className="flex items-start gap-2.5 text-xs text-slate-600 cursor-pointer pt-1">
+            <div className="p-3.5 rounded-2xl bg-sky-50/90 border border-sky-200/80 text-xs text-slate-600 space-y-1">
+              <p className="font-extrabold text-sky-700 flex items-center gap-1.5">
+                <Info className="w-4 h-4 text-sky-500 shrink-0" />
+                <span>登録後に届く確認メールについて</span>
+              </p>
+              <p className="text-[11px] leading-relaxed text-slate-600">
+                認証システムの仕様上、差出人名{" "}
+                <span className="font-bold text-slate-800">「Supabase Auth」</span>{" "}
+                から英語の認証メール（Confirm your email address）が届きます。Weet公式の案内ですので、メール内のリンクを押して登録を完了してください。
+              </p>
+            </div>
+          )}
+
+          {isSignUp && (
+            <label className="flex items-start gap-2.5 text-xs text-slate-600 cursor-pointer pt-0.5">
               <input
                 type="checkbox"
                 checked={agreedTerms}
