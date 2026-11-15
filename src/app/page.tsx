@@ -1091,6 +1091,18 @@ export default function RandomAvatarChatPage() {
         </div>
       )}
 
+      {/* ブランドロゴヘッダー */}
+      <div className="mb-3 flex items-center justify-center gap-3 z-10 select-none">
+        <img
+          src="/logo.png"
+          alt="WEET ロゴ"
+          className="w-11 h-11 rounded-2xl object-cover shadow-[0_6px_20px_rgba(139,92,246,0.18)] ring-2 ring-white/90"
+        />
+        <span className="text-3xl font-black tracking-wider bg-gradient-to-r from-pink-400 via-violet-400 to-sky-400 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(255,255,255,0.9)]">
+          WEET
+        </span>
+      </div>
+
       {/* 上部ステータスバー（高精細フロストガラス） */}
       <div className="mb-3.5 flex flex-wrap items-center justify-center gap-2 px-3 py-2 rounded-[2rem] bg-white/45 border border-white/80 ring-1 ring-inset ring-white/70 backdrop-blur-2xl shadow-[0_8px_32px_rgba(148,163,184,0.12)] z-10">
         <button
