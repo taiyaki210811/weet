@@ -1040,19 +1040,6 @@ export default function RandomAvatarChatPage() {
         isOpen={proModalOpen}
         onClose={() => setProModalOpen(false)}
         profile={profile}
-        onProfileUpdated={(updated) => {
-          setProfile(updated);
-          if (!updated.is_pro) {
-            handleSelectVoice("normal");
-            setMoodTag("any");
-            if (species === "furry" || species === "dragon" || species === "unicorn") {
-              setSpecies("fox");
-            }
-            if (theme.isPro) {
-              setTheme(THEMES[0]);
-            }
-          }
-        }}
         highlightReason={proModalReason}
       />
 

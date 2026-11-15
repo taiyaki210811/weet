@@ -1,15 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { Crown, X, Check, Sparkles, Loader2, CreditCard, Settings } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { Crown, X, Check, Loader2, CreditCard, Settings } from "lucide-react";
 import { UserProfile } from "@/types/plan";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   profile: UserProfile;
-  onProfileUpdated: (updated: UserProfile) => void;
   highlightReason?: string | null;
 };
 
@@ -17,10 +15,8 @@ export function ProUpgradeModal({
   isOpen,
   onClose,
   profile,
-  onProfileUpdated,
   highlightReason,
 }: Props) {
-  const [updating, setUpdating] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -68,29 +64,6 @@ export function ProUpgradeModal({
     } catch (e: unknown) {
       setErrorMsg(e instanceof Error ? e.message : "エラーが発生しました");
       setCheckoutLoading(false);
-    }
-  };
-
-  // 開発テスト用：DBのis_proを即座に切り替える
-  const handleToggleDemoPro = async () => {
-    setUpdating(true);
-    try {
-      const nextPro = !profile.is_pro;
-      const { data, error } = await supabase
-        .from("profiles")
-        .update({ is_pro: nextPro })
-        .eq("id", profile.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      if (data) {
-        onProfileUpdated(data as UserProfile);
-      }
-    } catch (e) {
-      console.error("Failed to toggle PRO:", e);
-    } finally {
-      setUpdating(false);
     }
   };
 
@@ -180,22 +153,6 @@ export function ProUpgradeModal({
             </button>
           )}
 
-          <button
-            onClick={handleToggleDemoPro}
-            disabled={updating}
-            className="w-full py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            {updating ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            )}
-            <span>
-              {profile.is_pro
-                ? "【開発テスト用】Freeプランに戻す"
-                : "【開発テスト用】決済なしでPROを試す"}
-            </span>
-          </button>
         </div>
       </div>
     </div>
