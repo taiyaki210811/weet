@@ -8,14 +8,47 @@ type Props = {
   onSuccess: () => void;
 };
 
+function translateAuthError(message: string): string {
+  if (message.includes("Invalid login credentials")) {
+    return "メールアドレスまたはパスワードが正しくありません。";
+  }
+  if (message.includes("Email not confirmed")) {
+    return "メールアドレスの確認が完了していません。受信トレイ（Supabase Auth）のリンクを押してください。";
+  }
+  if (message.includes("User already registered")) {
+    return "このメールアドレスはすでに登録されています。ログイン画面から進んでください。";
+  }
+  return message;
+}
+
 export function AuthGate({ onSuccess }: Props) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [infoMsg, setInfoMsg] = useState("");
+
+  const handleGoogleLogin = async () => {
+    setErrorMsg("");
+    setInfoMsg("");
+    setGoogleLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+      if (error) throw error;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Googleログインに失敗しました";
+      setErrorMsg(translateAuthError(msg));
+      setGoogleLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +71,9 @@ export function AuthGate({ onSuccess }: Props) {
         if (data.session) {
           onSuccess();
         } else {
-          setInfoMsg("確認メールを送信しました！メール内のリンクをクリックしてからログインしてね。");
+          setInfoMsg(
+            "確認メールを送信しました！差出人「Supabase Auth」から届く英語メール内のリンクを押すと登録が完了します（迷惑メールフォルダもご確認ください）。"
+          );
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -50,7 +85,7 @@ export function AuthGate({ onSuccess }: Props) {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "認証エラーが発生しました";
-      setErrorMsg(msg);
+      setErrorMsg(translateAuthError(msg));
     } finally {
       setLoading(false);
     }
@@ -76,6 +111,46 @@ export function AuthGate({ onSuccess }: Props) {
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
             相手にはメアドもカメラ映像も一切公開されません
           </p>
+        </div>
+
+        {/* Google で続けるボタン */}
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={googleLoading || loading}
+          className="w-full py-3 px-4 rounded-2xl bg-white/95 hover:bg-white border border-slate-200/90 text-slate-700 font-bold text-sm shadow-xs transition active:scale-98 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-60"
+        >
+          {googleLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin text-slate-500" />
+          ) : (
+            <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                fill="#4285F4"
+                d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17Z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 24c3.3 0 6.08-1.09 8.1-2.96l-3.88-3.05c-1.1.74-2.51 1.18-4.22 1.18-3.24 0-5.99-2.19-6.97-5.13H1.01v3.14C3.05 21.2 7.24 24 12 24Z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.03 14.04c-.25-.74-.39-1.54-.39-2.36 0-.82.14-1.62.39-2.36V6.18H1.01C.37 7.45 0 8.88 0 10.4s.37 2.95 1.01 4.22l4.02-3.14Z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 4.75c1.79 0 3.41.62 4.68 1.82l3.51-3.51C18.07 1.19 15.3 0 12 0 7.24 0 3.05 2.8 1.01 6.82l4.02 3.14c.98-2.94 3.73-5.21 6.97-5.21Z"
+              />
+            </svg>
+          )}
+          <span>Google で続ける（確認メール不要）</span>
+        </button>
+
+        <div className="relative my-5 flex items-center justify-center">
+          <div className="border-t border-slate-200/80 w-full" />
+          <span className="px-3 text-[11px] font-bold text-slate-400 bg-transparent whitespace-nowrap">
+            またはメールアドレスで
+          </span>
+          <div className="border-t border-slate-200/80 w-full" />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -131,14 +206,14 @@ export function AuthGate({ onSuccess }: Props) {
           )}
 
           {infoMsg && (
-            <p className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700">
+            <p className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700 leading-relaxed">
               {infoMsg}
             </p>
           )}
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || googleLoading}
             className="w-full py-3 rounded-2xl bg-gradient-to-r from-sky-400 to-indigo-400 hover:from-sky-300 hover:to-indigo-300 text-white font-bold text-sm shadow-md shadow-sky-200 transition active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
