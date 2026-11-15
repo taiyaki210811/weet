@@ -19,6 +19,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing signature or webhook secret" }, { status: 400 });
   }
 
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error("Missing SUPABASE_SERVICE_ROLE_KEY");
+    return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+  }
+
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(
@@ -39,15 +44,19 @@ export async function POST(req: Request) {
       const email = session.customer_details?.email || session.customer_email;
 
       if (userId) {
-        await supabaseAdmin
+        const { error } = await supabaseAdmin
           .from("profiles")
           .update({ is_pro: true })
           .eq("id", userId);
+        if (error) throw error;
       } else if (email) {
-        await supabaseAdmin
+        const { error } = await supabaseAdmin
           .from("profiles")
           .update({ is_pro: true })
           .eq("email", email);
+        if (error) throw error;
+      } else {
+        throw new Error("No userId or email found in checkout session");
       }
     }
 
@@ -55,10 +64,11 @@ export async function POST(req: Request) {
       const subscription = event.data.object as Stripe.Subscription;
       const userId = subscription.metadata?.userId;
       if (userId) {
-        await supabaseAdmin
+        const { error } = await supabaseAdmin
           .from("profiles")
           .update({ is_pro: false })
           .eq("id", userId);
+        if (error) throw error;
       }
     }
 
